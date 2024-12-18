@@ -1,3 +1,6 @@
+#  SOURCES: 
+# CHATGPT API: https://platform.openai.com/docs/quickstart?desktop-os=macOS&language-preference=python
+
 import pygame
 import random
 from sys import exit
@@ -81,68 +84,65 @@ class Question_box:
     def __init__(self, value, question, answer1, answer2, answer3, x1_pos, y1_pos):
         self.value = value
         self.question = question
-        self.answer1 = answer1
-        self.answer2 = answer2
-        self.answer3 = answer3
+        self.answers = [answer1, answer2, answer3]
         self.x1_pos = x1_pos
         self.y1_pos = y1_pos
         self.font = pygame.font.Font(None, 48)
         self.drawing = True
+        self.correct_index = 0
 
-    def draw_value(self, screen):
+    def shuffle_questions(self): # shuffle places for answers and also remember the place of the right answer
+        correct_answer = self.answers[0]  
+        random.shuffle(self.answers)
+        self.correct_index = self.answers.index(correct_answer)
+
+    def draw_value(self, screen): # draw value on the board
         if self.drawing == True:
             text_surface = self.font.render(f'{self.value}', True, 'yellow')
             screen.blit(text_surface, (self.x1_pos, self.y1_pos))
-        
-    def draw_when_clicked(self, screen, WIDTH, HEIGHT):
+
+    def draw_when_clicked(self, screen, WIDTH, HEIGHT): # draw questions and answers
         text_surface = self.font.render(f'{self.question}', True, 'yellow')
         screen.blit(text_surface, (100, HEIGHT // 2 - 200))
 
-        text_surface = self.font.render(f'A:{self.answer1}', True, 'yellow')
+        text_surface = self.font.render(f'A:{self.answers[0]}', True, 'yellow')
         screen.blit(text_surface, (100, 400))
         
-        text_surface = self.font.render(f'B:{self.answer2}', True, 'yellow')
+        text_surface = self.font.render(f'B:{self.answers[1]}', True, 'yellow')
         screen.blit(text_surface, (100, 500))
 
-        text_surface = self.font.render(f'C:{self.answer3}', True, 'yellow')
+        text_surface = self.font.render(f'C:{self.answers[2]}', True, 'yellow')
         screen.blit(text_surface, (100, 600))
   
-    def check_answer(self, user_input):
-        if user_input == 'a':
-            return True
-        if user_input == 'b':
-            return False
-        if user_input == 'c':
-            return False
-        # add in right answer to compare
-    def correct_answer(self, WIDTH, HEIGHT):
-        text_surface = self.font.render(f'YOU NAILED IT', True, 'black')
+    def check_answer(self, user_input): # check answers
+        if self.correct_index == 0:
+            if user_input == 'a':
+                return True
+            else:
+                return False
+
+        if self.correct_index == 1:
+            if user_input == 'b':
+                return True
+            else:
+                return False
+
+        if self.correct_index == 0:
+            if user_input == 'c':
+                return True
+            else:
+                return False
+        
+    def correct_answer(self, WIDTH, HEIGHT): # show when right answers
+        text_surface = self.font.render(f'YOU NAILED IT', True, 'yellow')
         screen.blit(text_surface, (WIDTH // 2, HEIGHT // 2))
     
-    def wrong_answer(self, WIDTH, HEIGHT):
-        text_surface = self.font.render(f'BOMBOCLAT, YOU GOT IT WRONG', True, 'black')
+    def wrong_answer(self, WIDTH, HEIGHT): # show when wrong answers
+        text_surface = self.font.render(f'BOMBOCLAT, YOU GOT IT WRONG', True, 'yellow')
         screen.blit(text_surface, (WIDTH // 2 - 50, HEIGHT // 2 - 200))
-    
-    def __str__(self):
-        return f'{self.question}'
 
-class Question_box_2(Question_box):
-    def check_answer(self, user_input):
-        if user_input == 'a':
-            return False
-        if user_input == 'b':
-            return True
-        if user_input == 'c':
-            return False
-
-class Question_box_3(Question_box):
-    def check_answer(self, user_input):
-        if user_input == 'a':
-            return False
-        if user_input == 'b':
-            return False
-        if user_input == 'c':
-            return True
+        text_surface2 = self.font.render(self.answers[self.correct_index], True, 'yellow')
+        screen.blit(text_surface2, (WIDTH // 2, HEIGHT // 2 + 30))
 
 class user:
     def __init__(self, name, points):
@@ -150,7 +150,7 @@ class user:
         self.points = points
         self.font = pygame.font.Font(None, 48)
     
-    def broken_bones(self):
+    def broken_bones(self): # return what to show when finish punching
         if self.points == 0:
             return 'nothing'
         if self.points < 100:
@@ -162,7 +162,7 @@ class user:
         if self.points >= 1200 and self.points <= 1800:
             return 'full dammge'
     
-    def present_point(self):
+    def present_point(self): # show many points user get
         text_surface = self.font.render(f'CONGRATS, YOU GOT {self.points} POINTS', True, 'yellow')
         text_surface2 = self.font.render(f'TO CONTINUE PRESS SPACE', True, 'yellow')
         screen.blit(text_surface, (100, HEIGHT // 2))
@@ -173,7 +173,7 @@ class user:
         screen.blit(text_surface3, (100, HEIGHT // 2 + 60))
         screen.blit(text_surface4, (100, HEIGHT // 2 + 90))
     
-    def present_dmg(self, dmg):
+    def present_dmg(self, dmg): # take information of broken_bones() and show the right pictures
         if dmg == 'nothing':
             text_surface3 = self.font.render(f'WHY SO BAD LA, NO POINTS', True, 'yellow')
             screen.blit(text_surface3, (100, HEIGHT // 2 + 60))
@@ -190,7 +190,7 @@ class user:
             full_damage = pygame.transform.scale(pygame.image.load(f'ASSETS/phase_4_jeopardy_abby.png'), (900, 900))
             screen.blit(full_damage, (0, 0))
     
-    def zero_points(self):
+    def zero_points(self): # show when players get no points
         text_surface = self.font.render(f'AYY, WHY SO BAD, 0 POINTS', True, 'yellow')
         screen.blit(text_surface, (100, HEIGHT // 2))
    
@@ -209,7 +209,6 @@ def greeting(name):
     print('You will start with 0 points. You can choose the question with the value you want, higher the points harder the questions')
     print('At the end of the game, more points you have, more punches you can give to Abby which is the BAD character in The Crucible.')
     print('I believe in you so you can destroy this bad guy')
-    print('The first collumn is about xxx. The second collumn is about xxx. The third collumn is about xxx')
 
 def generate_questions(topics):
     global qa_dict
@@ -231,39 +230,37 @@ def generate_questions(topics):
     answers = [block.split("\n")[1:] for block in blocks]
 
     for i in range(len(questions)):
-        question_key = f"question{i+1}_{i+1}"
-        answer_key_A = f"answer{i+1}A"
-        answer_key_B = f"answer{i+1}B"
-        answer_key_C = f"answer{i+1}C"
+        question_key = f"question{i+1}_{i+1}" # generate a keys so I wont need to create variables outside
+        answer_key_1 = f"answer{i+1}_1"
+        answer_key_2 = f"answer{i+1}_2"
+        answer_key_3 = f"answer{i+1}_3"
         
         qa_dict[question_key] = questions[i]
         
         if answers[i][0][0] == '*':
-            qa_dict[answer_key_A] = answers[i][0][1:]
-            qa_dict[answer_key_B] = answers[i][1]
-            qa_dict[answer_key_C] = answers[i][2]
+            qa_dict[answer_key_1] = answers[i][0][1:] # set value to keys
+            qa_dict[answer_key_2] = answers[i][1]
+            qa_dict[answer_key_3] = answers[i][2]
         elif answers[i][1][0] == '*':
-            qa_dict[answer_key_A] = answers[i][1][1:]
-            qa_dict[answer_key_B] = answers[i][0]
-            qa_dict[answer_key_C] = answers[i][2]
+            qa_dict[answer_key_1] = answers[i][1][1:]
+            qa_dict[answer_key_2] = answers[i][0]
+            qa_dict[answer_key_3] = answers[i][2]
         elif answers[i][2][0] == '*':
-            qa_dict[answer_key_A] = answers[i][2][1:]
-            qa_dict[answer_key_B] = answers[i][1]
-            qa_dict[answer_key_C] = answers[i][0]
+            qa_dict[answer_key_1] = answers[i][2][1:]
+            qa_dict[answer_key_2] = answers[i][1]
+            qa_dict[answer_key_3] = answers[i][0]
 
 def reset(question, user_input, user, position, q, questions):
     global enter_status, points, positions
     if question.check_answer(user_input):
-        user.points += question.value
+        user.points += question.value # update points
         points = user.points
-        answering = False
         positions[position] = False
-        positions[q] = True
+        positions[q] = True # set the second flag to True so when clicked it wont detect that box is still answerable
         enter_status = False
-        user_input = ''
-        question.drawing = False
+        user_input = '' # set user_input back to None for other questions
+        question.drawing = False # set this to False so it wont draw on the main board
     else:
-        answering = False
         enter_status = False
         user_input = ''
         question.drawing = False
@@ -272,17 +269,16 @@ def reset(question, user_input, user, position, q, questions):
 
 def analysize_result(question, user_input, position):
     global answering
-    if question.check_answer(user_input) and position:
-        screen.fill(WHITE)
+    if question.check_answer(user_input) and position: # show players if they get the questions right or not
+        screen.fill('blue')
         question.correct_answer(WIDTH, HEIGHT)
         pygame.display.flip()
         
     else:
-        screen.fill(WHITE)
+        screen.fill('blue')
         question.wrong_answer(WIDTH, HEIGHT)
         pygame.display.flip()
         
-
 while start:
     name = input('Please enter your name: ')
     user = user(name, 0)
@@ -295,15 +291,15 @@ while start:
 
 # generate board
 questions = []
-questions.append(Question_box(100, qa_dict['question1_1'], qa_dict['answer1A'], qa_dict['answer1B'], qa_dict['answer1C'], 125, 125)) # top left
-questions.append(Question_box_2(200, qa_dict['question2_2'], qa_dict['answer2A'], qa_dict['answer2B'], qa_dict['answer2C'], 125, 425)) # middle left
-questions.append(Question_box_3(300, qa_dict['question3_3'], qa_dict['answer3A'], qa_dict['answer3B'], qa_dict['answer3C'], 125, 725)) # bottom left
-questions.append(Question_box(100, qa_dict['question4_4'], qa_dict['answer4A'], qa_dict['answer4B'], qa_dict['answer4C'], 425, 125)) # top middle
-questions.append(Question_box_2(200, qa_dict['question5_5'], qa_dict['answer5A'], qa_dict['answer5B'], qa_dict['answer5C'], 425, 425)) # middle
-questions.append(Question_box_3(300, qa_dict['question6_6'], qa_dict['answer6A'], qa_dict['answer6B'], qa_dict['answer6C'], 425, 725)) # bottom middle
-questions.append(Question_box(100, qa_dict['question7_7'], qa_dict['answer7A'], qa_dict['answer7B'], qa_dict['answer7C'], 725, 125)) # top right
-questions.append(Question_box_2(200, qa_dict['question8_8'], qa_dict['answer8A'], qa_dict['answer8B'], qa_dict['answer8C'], 725, 425)) # middle right
-questions.append(Question_box_3(300, qa_dict['question9_9'], qa_dict['answer9A'], qa_dict['answer9B'], qa_dict['answer9C'], 725, 725)) # bottom middle
+questions.append(Question_box(100, qa_dict['question1_1'], qa_dict['answer1_1'], qa_dict['answer1_2'], qa_dict['answer1_3'], 125, 125)) # top left
+questions.append(Question_box(200, qa_dict['question2_2'], qa_dict['answer2_1'], qa_dict['answer2_2'], qa_dict['answer2_3'], 125, 425)) # middle left
+questions.append(Question_box(300, qa_dict['question3_3'], qa_dict['answer3_1'], qa_dict['answer3_2'], qa_dict['answer3_3'], 125, 725)) # bottom left
+questions.append(Question_box(100, qa_dict['question4_4'], qa_dict['answer4_1'], qa_dict['answer4_2'], qa_dict['answer4_3'], 425, 125)) # top middle
+questions.append(Question_box(200, qa_dict['question5_5'], qa_dict['answer5_1'], qa_dict['answer5_2'], qa_dict['answer5_3'], 425, 425)) # middle
+questions.append(Question_box(300, qa_dict['question6_6'], qa_dict['answer6_1'], qa_dict['answer6_2'], qa_dict['answer6_3'], 425, 725)) # bottom middle
+questions.append(Question_box(100, qa_dict['question7_7'], qa_dict['answer7_1'], qa_dict['answer7_2'], qa_dict['answer7_3'], 725, 125)) # top right
+questions.append(Question_box(200, qa_dict['question8_8'], qa_dict['answer8_1'], qa_dict['answer8_2'], qa_dict['answer8_3'], 725, 425)) # middle right
+questions.append(Question_box(300, qa_dict['question9_9'], qa_dict['answer9_1'], qa_dict['answer9_2'], qa_dict['answer9_3'], 725, 725)) # bottom middle
 
 while start_2:   
     timer.tick(fps)
@@ -312,7 +308,7 @@ while start_2:
             pygame.quit()
             exit()
 
-        everything_finished = True
+        everything_finished = True   # check if every questions are answered or not
         for i in range(len(positions)-9, 18):
             if positions[i] == False:
                 everything_finished = False
@@ -328,10 +324,10 @@ while start_2:
                     
             # check which question is chosen
             if event.type == pygame.MOUSEBUTTONDOWN:
-                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    mouse_x, mouse_y = pygame.mouse.get_pos() # get the position of the mouse on the screen
                     if mouse_x < 300 and mouse_y < 300 and positions[9] == False: # detect top left clicked
-                        positions[0] = True
-                        answering = True
+                        positions[0] = True # set that box to true to show questions
+                        answering = True # set answering to true to activate showing questions chosen
                     if mouse_x < 300 and (mouse_y > 300 and mouse_y < 600) and positions[10] == False: # detect middle left clicked
                         positions[1] = True
                         answering = True
@@ -359,7 +355,7 @@ while start_2:
                 
             # show questions when clicked
             for i in range(len(positions) - 9):
-                if positions[i] and answering:
+                if positions[i] and answering: # loop through every box until there is one that is true and show that box ONLY
                     screen.fill('blue')
                     questions[i].draw_when_clicked(screen, WIDTH, HEIGHT)
                     pygame.display.flip()
@@ -369,7 +365,7 @@ while start_2:
                 if event.type == pygame.KEYDOWN and question:
                     if event.key == pygame.K_a:
                         user_input = 'a'
-                        enter_status = True
+                        enter_status = True # active analyze 
                     if event.key == pygame.K_b:
                         user_input = 'b'
                         enter_status = True
@@ -377,17 +373,17 @@ while start_2:
                         user_input = 'c'
                         enter_status = True
 
-            # analysize result
+            # analyze result
             if enter_status == True:
-                for i in range(len(positions) - 9):
+                for i in range(len(positions) - 9): # only loop the first 9 flags 
                     if positions[i] == True:
-                        answering = False
+                        answering = False # set back to False so it wont show question 
                         analysize_result(questions[i], user_input, positions[i])
             
             # reset 
             if event.type == pygame.KEYDOWN: 
                 for i in range(len(positions)-9):
-                    if event.key == pygame.K_SPACE and positions[i] == True: # top left, question 1
+                    if event.key == pygame.K_SPACE and positions[i] == True: 
                         reset(questions[i], user_input, user, i, i + 9, questions)
 
     # when finished answering all the questions
@@ -397,6 +393,13 @@ while start_2:
                     if event.key == pygame.K_SPACE and first_annoucement == True:
                         first_annoucement = False
                 
+                # annoucements before punching
+                if first_annoucement == True:
+                    screen.fill('blue')
+                    user.present_point()
+                    pygame.display.flip()
+                    continue
+
                 # punching phase
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_a] and keys[pygame.K_d]:  # Press both A and D to punch
@@ -407,13 +410,6 @@ while start_2:
                     punching = False
                             
                 screen.fill('blue')
-
-                # annoucements before punching
-                if first_annoucement == True:
-                    screen.fill('blue')
-                    user.present_point()
-                    pygame.display.flip()
-                    continue
                 
                 # show dmg
                 if points == 0:
